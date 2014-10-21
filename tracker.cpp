@@ -10,7 +10,7 @@ const int A2 = -1;
 const int B0 = 1;
 const float sigmax = 8.0f;
 const float sigmay = 8.0f;
-const uint32_t standard_size = 5;
+const uint32_t standard_size = 5; //2^x = 32 (ex: 2^5 = 32)
 std::default_random_engine generator;
 
 inline bool struct_cmp_by_freq(const particle& a, const particle& b)
@@ -50,9 +50,7 @@ inline void generateHist(const Matrix& select_image, uint32_t* hist_range, const
             hsv_ind = (h_ind << 8) + (s_ind << 4) + v_ind;
 
             hist_range[hsv_ind] += 1;
-            //hist_range[h_ind + 32] = hist_range[h_ind + 32] + 1;
-            //hist_range[s_ind + 16] = hist_range[s_ind + 16] + 1;
-            //hist_range[v_ind +  0] = hist_range[v_ind +  0] + 1;
+
         }
     }
 }
@@ -88,8 +86,8 @@ void pftracker::track(const Matrix& img)
 
     float sum = 0.0f;
 
-    const float sigmax_gain = (float)(tr_w >> standard_size);
-    const float sigmay_gain = (float)(tr_h >> standard_size);
+    const int sigmax_gain = (tr_w >> standard_size);
+    const int sigmay_gain = (tr_h >> standard_size);
     const float sigx = sigmax * sigmax_gain;
     const float sigy = sigmay * sigmay_gain;
 
@@ -121,10 +119,10 @@ void pftracker::track(const Matrix& img)
         p_particle->prex = xpre;
         p_particle->prey = ypre;
 
-        p_particle->rect_x	    = max(0, min((int32_t)(p_particle->x - (p_particle->rect_width  >> 1)), int32_t(cam_w - 1)));
-        p_particle->rect_y      = max(0, min((int32_t)(p_particle->y - (p_particle->rect_height >> 1)), int32_t(cam_h - 1)));
-        p_particle->rect_width  = min((int32_t)(p_particle->rect_width ), (int32_t)cam_w - 1 - p_particle->rect_x);
-        p_particle->rect_height = min((int32_t)(p_particle->rect_height), (int32_t)cam_h - 1 - p_particle->rect_y);
+        p_particle->rect_x	    = max(0, min((p_particle->x - (p_particle->rect_width  >> 1)), int32_t(cam_w) - 1));
+        p_particle->rect_y      = max(0, min((p_particle->y - (p_particle->rect_height >> 1)), int32_t(cam_h) - 1));
+        p_particle->rect_width  = min((p_particle->rect_width ), int32_t(cam_w) - 1 - p_particle->rect_x);
+        p_particle->rect_height = min((p_particle->rect_height), int32_t(cam_h) - 1 - p_particle->rect_y);
 
         generateHist(img, track_hist, HIST_BIN_NUM, Rect(p_particle->rect_x, p_particle->rect_y, p_particle->rect_width, p_particle->rect_height));	
 
